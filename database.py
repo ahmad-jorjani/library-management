@@ -119,6 +119,7 @@ class Database:
             """,
             (book.title, book.author, book.publication_year, book.pages),
         )
+        self.commit()
 
         return self.cursor.lastrowid
 
@@ -149,6 +150,7 @@ class Database:
             """,
             (book_id,),
         )
+        self.commit()
 
         return self.cursor.rowcount > 0
 
@@ -161,6 +163,7 @@ class Database:
             """,
             (book.title, book.author, book.publication_year, book.pages, book.id),
         )
+        self.commit()
 
         return self.cursor.rowcount > 0
 
