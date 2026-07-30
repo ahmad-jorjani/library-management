@@ -1,4 +1,4 @@
-# Expense Tracker
+# Library Management
 
 A simple command-line Expense Tracker built with Python and SQLite.
 
