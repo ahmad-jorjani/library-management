@@ -50,6 +50,9 @@ class Database:
             return_at=row["return_at"],
         )
 
+    def _rows_to_borrows(self, rows: list[Row]) -> list[Borrow]:
+        return [self._row_to_borrow(row) for row in rows]
+
     def close(self):
         if self.conn:
             self.conn.close()
@@ -266,6 +269,68 @@ class Database:
             return None
 
         return self._row_to_borrow(row)
+
+    def get_all_borrows(self) -> list[Borrow]:
+        self.cursor.execute("SELECT * FROM borrows")
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
+
+    def get_active_borrows(self):
+        self.cursor.execute("""
+            SELECT * FROM borrows
+            WHERE return_at IS NULL
+            """)
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
+
+    def get_returned_borrows(self):
+        self.cursor.execute("""
+            SELECT * FROM borrows
+            WHERE return_at IS NOT NULL
+            """)
+
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
+
+    def get_overdue_borrows(self):
+        self.cursor.execute(
+            """
+            SELECT * FROM borrows
+            WHERE return_at IS NULL
+            AND dua_date < ?
+            """,
+            (date.today(),),
+        )
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
+
+    def get_member_borrows(self, member_id: int) -> list[Borrow]:
+        self.cursor.execute(
+            """
+            SELECT * FROM borrows
+            WHERE member_id = ?
+            """,
+            (member_id,),
+        )
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
+
+    def get_book_borrows(self, book_id: int) -> list[Borrow]:
+        self.cursor.execute(
+            """
+            SELECT * FROM borrows
+            WHERE book_id = ?
+            """,
+            (book_id,),
+        )
+        rows = self.cursor.fetchall()
+
+        return self._rows_to_borrows(rows)
 
     def update_return_date(self, borrow_id: int, return_at: date) -> bool:
         self.cursor.execute(
