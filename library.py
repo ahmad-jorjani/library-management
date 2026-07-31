@@ -149,3 +149,59 @@ class Library:
         except Exception:
             self.db.rollback()
             raise
+
+    # ? Borrow View
+    def show_borrow_views(self):
+        borrow_views = self.db.get_all_borrow_views()
+
+        if not borrow_views:
+            raise ValueError("Database is empty.")
+
+        return borrow_views
+
+    def show_active_borrow_views(self):
+        act_borrow_views = self.db.get_active_borrow_views()
+
+        if not act_borrow_views:
+            raise ValueError("Database is empty.")
+
+        return act_borrow_views
+
+    def show_returned_borrow_views(self):
+        returned_borrow_views = self.db.get_returned_borrow_views()
+
+        if not returned_borrow_views:
+            raise ValueError("Database is empty.")
+
+        return returned_borrow_views
+
+    def show_member_history(self, member_id: int):
+        member_history = self.db.get_member_borrow_views(member_id)
+        if not member_history:
+            raise ValueError("Member ID is not correct or Database is empty.")
+
+        return member_history
+
+    def show_book_history(self, book_id: int):
+        book_history = self.db.get_book_borrow_views(book_id)
+
+        if not book_history:
+            raise ValueError("Book ID is not correct or Database is empty.")
+
+        return book_history
+
+    def show_overdue_borrow_views(self):
+        overdue_borrow_views = self.db.get_overdue_borrow_views()
+
+        if not overdue_borrow_views:
+            raise ValueError("Database is empty.")
+
+        return overdue_borrow_views
+
+    def find_borrow_view(self, borrow_id: int):
+        borrow_view = self.db.get_borrow_view_by_id(borrow_id)
+
+        if borrow_id is None:
+            raise ValueError("Borrow is not found.")
+
+        return borrow_view

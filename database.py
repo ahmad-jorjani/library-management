@@ -317,44 +317,6 @@ class Database:
 
         return self._row_to_borrow(row)
 
-    def get_all_borrows(self) -> list[Borrow]:
-        self.cursor.execute("SELECT * FROM borrows")
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
-    def get_active_borrows(self):
-        self.cursor.execute("""
-            SELECT * FROM borrows
-            WHERE return_at IS NULL
-            """)
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
-    def get_returned_borrows(self):
-        self.cursor.execute("""
-            SELECT * FROM borrows
-            WHERE return_at IS NOT NULL
-            """)
-
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
-    def get_overdue_borrows(self):
-        self.cursor.execute(
-            """
-            SELECT * FROM borrows
-            WHERE return_at IS NULL
-            AND dua_date < ?
-            """,
-            (date.today(),),
-        )
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
     def update_return_date(self, borrow_id: int, return_at: date) -> bool:
         self.cursor.execute(
             """
