@@ -3,7 +3,7 @@ from sqlite3 import Row
 from datetime import date
 from models.book import BookCreate, Book
 from models.member import MemberCreate, Member
-from models.borrow import Borrow
+from models.borrow import Borrow, BorrowView
 
 
 class Database:
@@ -52,6 +52,53 @@ class Database:
 
     def _rows_to_borrows(self, rows: list[Row]) -> list[Borrow]:
         return [self._row_to_borrow(row) for row in rows]
+
+    def _row_to_borrow_view(self, row: Row) -> BorrowView:
+        return BorrowView(
+            borrow_id=row["borrow_id"],
+            book_id=row["book_id"],
+            book_title=row["book_title"],
+            member_id=row["member_id"],
+            member_name=row["member_name"],
+            borrow_at=row["borrow_at"],
+            due_date=row["due_date"],
+            return_at=row["return_at"],
+        )
+
+    def _rows_to_borrow_views(self, rows: list[Row]) -> list[BorrowView]:
+        return [self._row_to_borrow_view(row) for row in rows]
+
+    def _borrow_view_query(
+        self, where_sql: str = "", params: tuple = ()
+    ) -> list[BorrowView]:
+
+        query = """
+            SELECT
+                borrows.id AS borrow_id,
+                books.id AS book_id,
+                books.title AS book_title,
+                members.id AS member_id,
+                members.name AS member_name,
+                
+                borrows.borrow_at,
+                borrows.due_date,
+                borrows.return_at
+            FROM borrows
+            
+            JOIN books
+            ON borrows.book_id = books.id
+            
+            JOIN members
+            ON borrows.member_id = members.id
+            """
+
+        if where_sql:
+            query += "\n" + where_sql
+
+        self.cursor.execute(query, params)
+
+        rows = self.cursor.fetchall()
+        return self._rows_to_borrow_views(rows)
 
     def close(self):
         if self.conn:
@@ -308,30 +355,6 @@ class Database:
 
         return self._rows_to_borrows(rows)
 
-    def get_member_borrows(self, member_id: int) -> list[Borrow]:
-        self.cursor.execute(
-            """
-            SELECT * FROM borrows
-            WHERE member_id = ?
-            """,
-            (member_id,),
-        )
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
-    def get_book_borrows(self, book_id: int) -> list[Borrow]:
-        self.cursor.execute(
-            """
-            SELECT * FROM borrows
-            WHERE book_id = ?
-            """,
-            (book_id,),
-        )
-        rows = self.cursor.fetchall()
-
-        return self._rows_to_borrows(rows)
-
     def update_return_date(self, borrow_id: int, return_at: date) -> bool:
         self.cursor.execute(
             """
@@ -343,3 +366,45 @@ class Database:
         )
 
         return self.cursor.rowcount > 0
+
+    # ! Borrow View
+    def get_all_borrow_views(self) -> list[BorrowView]:
+        return self._borrow_view_query()
+
+    def get_active_borrow_views(self):
+        where_sql = "WHERE borrows.return_at IS NULL"
+
+        return self._borrow_view_query(where_sql)
+
+    def get_returned_borrow_views(self):
+        where_sql = "WHERE borrows.return_at IS NOT NULL"
+
+        return self._borrow_view_query(where_sql)
+
+    def get_member_borrow_views(self, member_id: int):
+        where_sql = "WHERE borrows.member_id = ?"
+        params = (member_id,)
+
+        return self._borrow_view_query(where_sql, params)
+
+    def get_book_borrow_views(self, book_id: int):
+        where_sql = "WHERE borrows.book_id = ?"
+        params = (book_id,)
+
+        return self._borrow_view_query(where_sql, params)
+
+    def get_overdue_borrow_views(self):
+        where_sql = "WHERE borrows.return_at IS NULL AND borrows.due_date < ?"
+        params = (date.today(),)
+
+        return self._borrow_view_query(where_sql, params)
+
+    def get_borrow_view_by_id(self, borrow_id: int) -> BorrowView | None:
+        where_sql = "WHERE borrows.id = ?"
+        params = (borrow_id,)
+
+        view = self._borrow_view_query(where_sql, params)
+        if not view:
+            return None
+
+        return view[0]

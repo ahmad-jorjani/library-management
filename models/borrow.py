@@ -15,6 +15,17 @@ class Borrow(BorrowCreate):
     id: PositiveInt
     return_at: date | None = None
 
+
+class BorrowView(BaseModel):
+    borrow_id: PositiveInt
+    book_id: PositiveInt
+    book_title: str
+    member_id: PositiveInt
+    member_name: str
+    borrow_at: date
+    due_date: date
+    return_at: date | None
+
     @computed_field
     @property
     def is_late(self) -> bool:
@@ -24,13 +35,19 @@ class Borrow(BorrowCreate):
         return self.return_at > self.due_date
 
     def __str__(self):
-        status_returned = "Yes" if self.return_at is not None else "No"
-        status_late = "Yes" if not self.is_late else "No"
+        if self.return_at is not None:
+            status = "Returned"
+
+        elif self.is_late:
+            status = "Overdue"
+
+        else:
+            status = "Borrowed"
 
         return (
-            f"Book #{self.book_id} -> Member #{self.member_id}\n"
+            f"Book: {self.book_title}\n"
+            f"Member: {self.member_name}\n"
             f"Borrowed: {self.borrow_at}\n"
             f"Due: {self.due_date}\n"
-            f"Returned: {status_returned}\n"
-            f"Late: {status_late}"
+            f"Status: {status}"
         )
