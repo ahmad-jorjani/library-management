@@ -1,13 +1,16 @@
 from datetime import date, timedelta
+
 from models.book import BookCreate, Book
 from models.member import MemberCreate, Member
-from models.borrow import BorrowCreate, Borrow
+from models.borrow import BorrowCreate
+from exceptions import *
 from database import Database
 
 
 class Library:
     def __init__(self):
         self.db = Database()
+        self.db.create_tables()
 
     def close(self):
         self.db.close()
@@ -22,7 +25,7 @@ class Library:
         book = self.db.get_book_by_id(book_id)
 
         if book is None:
-            raise ValueError("Book not found!")
+            raise BookNotFoundError("Book not found!")
 
         return book
 
@@ -31,7 +34,7 @@ class Library:
 
         # books -> []
         if not books:
-            raise ValueError("Database is empty for now!")
+            raise BookNotFoundError("No book record!")
 
         return books
 
@@ -39,7 +42,7 @@ class Library:
         removed = self.db.remove_book(book_id)
 
         if not removed:
-            raise ValueError("Book id is not correct!")
+            raise BookNotFoundError("Book id is not correct!")
 
         return True
 
@@ -47,9 +50,17 @@ class Library:
         updated = self.db.update_book(book)
 
         if not updated:
-            raise ValueError("Book not Updated!")
+            raise DatabaseError("Failed to update book!")
 
         return True
+
+    def update_book_field(self, book: Book, field: str, value: str):
+        data = book.model_dump()
+        data[field] = value
+        updated_book = Book.model_validate(data)
+        self.update_book(book)
+
+        return updated_book
 
     # ? Member
     def add_member(self, member_data: MemberCreate) -> int:
@@ -61,7 +72,7 @@ class Library:
         member = self.db.get_member_by_id(member_id)
 
         if member is None:
-            raise ValueError("Member not found!")
+            raise MemberNotFoudError("Member not found!")
 
         return member
 
@@ -69,7 +80,7 @@ class Library:
         members = self.db.get_all_members()
 
         if not members:
-            raise ValueError("Database is empty for now!")
+            raise MemberNotFoudError("No member record!")
 
         return members
 
@@ -77,7 +88,7 @@ class Library:
         removed = self.db.remove_member(member_id)
 
         if not removed:
-            raise ValueError("Member ID is not correct!")
+            raise MemberNotFoudError("Member ID is not correct!")
 
         return True
 
@@ -85,7 +96,7 @@ class Library:
         updated = self.db.update_member(member)
 
         if not updated:
-            raise ValueError("Member not updated!")
+            raise Database("Failed to updated member!")
 
         return True
 
@@ -98,13 +109,13 @@ class Library:
         book = self.db.get_book_by_id(book_id)
 
         if member is None:
-            raise ValueError("Member not found!")
+            raise MemberNotFoudError("Member not found!")
 
         if book is None:
-            raise ValueError("Book not found!")
+            raise BookNotFoundError("Book not found!")
 
         if not book.available:
-            raise ValueError("Book is not Available!")
+            raise BookAvailableError("Book is not Available!")
 
         borrow_data = BorrowCreate(
             book_id=book_id, member_id=member_id, borrow_at=borrow_at, due_date=due_at
@@ -126,10 +137,12 @@ class Library:
         borrow = self.db.get_borrow_by_id(borrow_id)
 
         if borrow is None:
-            raise ValueError("Borrow not found!")
+            raise BorrowNotFoundError("Borrow not found!")
 
         if borrow.return_at is not None:
-            raise ValueError(f"Book {borrow.book_id} was already returend!")
+            raise BorrowAlreadyReturnedError(
+                f"Book {borrow.book_id} was already returend!"
+            )
 
         borrow.return_at = date.today()
         try:
@@ -140,7 +153,7 @@ class Library:
             )
 
             if not book_result:
-                raise RuntimeError("Borrow references missing a book!")
+                raise DatabaseError("Borrow references missing a book!")
 
             self.db.commit()
 
@@ -155,7 +168,7 @@ class Library:
         borrow_views = self.db.get_all_borrow_views()
 
         if not borrow_views:
-            raise ValueError("Database is empty.")
+            raise BorrowNotFoundError("No borrow records found.")
 
         return borrow_views
 
@@ -163,7 +176,7 @@ class Library:
         act_borrow_views = self.db.get_active_borrow_views()
 
         if not act_borrow_views:
-            raise ValueError("Database is empty.")
+            raise BorrowNotFoundError("No active borrows found.")
 
         return act_borrow_views
 
@@ -171,22 +184,32 @@ class Library:
         returned_borrow_views = self.db.get_returned_borrow_views()
 
         if not returned_borrow_views:
-            raise ValueError("Database is empty.")
+            raise BorrowNotFoundError("No returned borrows found.")
 
         return returned_borrow_views
 
     def show_member_history(self, member_id: int):
+        member = self.db.get_member_by_id(member_id)
+
+        if member is None:
+            raise MemberNotFoudError("Member ID is not correct!")
+
         member_history = self.db.get_member_borrow_views(member_id)
         if not member_history:
-            raise ValueError("Member ID is not correct or Database is empty.")
+            raise NoBorrowHistoryError("This member has no borrow history.")
 
         return member_history
 
     def show_book_history(self, book_id: int):
+        book = self.db.get_book_by_id(book_id)
+
+        if book is None:
+            raise BookNotFoundError("Book ID is not correct!")
+
         book_history = self.db.get_book_borrow_views(book_id)
 
         if not book_history:
-            raise ValueError("Book ID is not correct or Database is empty.")
+            raise NoBorrowHistoryError("This book has no borrow history.")
 
         return book_history
 
@@ -194,14 +217,14 @@ class Library:
         overdue_borrow_views = self.db.get_overdue_borrow_views()
 
         if not overdue_borrow_views:
-            raise ValueError("Database is empty.")
+            raise BorrowNotFoundError("No overdue borrows found.")
 
         return overdue_borrow_views
 
     def find_borrow_view(self, borrow_id: int):
         borrow_view = self.db.get_borrow_view_by_id(borrow_id)
 
-        if borrow_id is None:
-            raise ValueError("Borrow is not found.")
+        if borrow_view is None:
+            raise BorrowNotFoundError("Borrow is not found.")
 
         return borrow_view

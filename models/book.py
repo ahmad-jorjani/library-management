@@ -34,5 +34,6 @@ class Book(BookCreate):
             f"Author: {self.author}\n"
             f"Publication Year: {self.publication_year}\n"
             f"Pages: {self.pages}\n"
-            f"Available: {status}"
+            f"Available: {status}\n"
+            "---------------------"
         )
