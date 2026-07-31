@@ -240,6 +240,7 @@ class Database:
             """,
             (member.name, member.phone, member.email),
         )
+        self.commit()
 
         return self.cursor.lastrowid
 
@@ -271,6 +272,7 @@ class Database:
             """,
             (member_id,),
         )
+        self.commit()
 
         return self.cursor.rowcount > 0
 
@@ -283,6 +285,7 @@ class Database:
             """,
             (member.name, member.phone, member.email, member.id),
         )
+        self.commit()
 
         return self.cursor.rowcount > 0
 

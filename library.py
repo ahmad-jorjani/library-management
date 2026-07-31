@@ -58,7 +58,7 @@ class Library:
         data = book.model_dump()
         data[field] = value
         updated_book = Book.model_validate(data)
-        self.update_book(book)
+        self.update_book(updated_book)
 
         return updated_book
 
@@ -99,6 +99,14 @@ class Library:
             raise Database("Failed to updated member!")
 
         return True
+
+    def update_member_field(self, member: Member, field: str, value: str) -> Member:
+        data = member.model_dump()
+        data[field] = value
+        updated_member = Member.model_validate(data)
+        self.update_member(updated_member)
+
+        return updated_member
 
     # ? Borrow
     def borrow_book(self, book_id: int, member_id: int) -> int:

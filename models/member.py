@@ -18,4 +18,6 @@ class Member(MemberCreate):
     id: PositiveInt
 
     def __str__(self):
-        return f"[{self.id}] {self.name:<20} | {self.email:<15} | {self.phone:>10}"
+        phone = self.phone if self.phone is not None else "N/A"
+
+        return f"[{self.id}] {self.name:<20} | {self.email:<25} | {phone:>10}"
