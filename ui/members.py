@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 from models.member import MemberCreate
 from library import Library
-from exceptions import *
+from exceptions import LibraryError
 
 
 def member_menu(library: Library):

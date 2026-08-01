@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from models.book import BookCreate, Book
 from models.member import MemberCreate, Member
-from models.borrow import BorrowCreate
+from models.borrow import BorrowCreate, BorrowView
 from exceptions import *
 from database import Database
 

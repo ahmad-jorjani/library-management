@@ -1,7 +1,7 @@
 from library import Library
 from ui.books import book_menu
 from ui.members import member_menu
-from exceptions import *
+from ui.borrows import borrow_menu
 
 
 def show_main_menu():
@@ -31,7 +31,7 @@ def main():
                         member_menu(library)
 
                     case "3":
-                        pass
+                        borrow_menu(library)
 
                     case "0":
                         print("Thank You For Using Library System Program, GoodBye!")

@@ -297,7 +297,7 @@ class Database:
                 book_id,
                 member_id,
                 borrow_at,
-                due_at
+                due_date
             )
             VALUES(?,?,?,?)
             """,
@@ -327,7 +327,7 @@ class Database:
             SET return_at = ?
             WHERE id = ?
             """,
-            (borrow_id, return_at),
+            (return_at, borrow_id),
         )
 
         return self.cursor.rowcount > 0
