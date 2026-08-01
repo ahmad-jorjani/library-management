@@ -3,8 +3,8 @@
 A simple command-line Library Management  built with Python, Pydantic and SQLite.
 
 ## Preview
-![Library Management]("images/demo.png")
-![Library Management Pic]("images/demo1.png")
+![Library Management](images/demo.png)
+![Library Management Pic](images/demo1.png)
 
 ## Features
 - Add, Remove, Update, Find, Show books
@@ -31,6 +31,10 @@ library-managment/
 │   └── book.py
 │   └── member.py
 │   └── borrow.py
+├── ui/
+│   └── books.py
+│   └── members.py
+│   └── borrows.py
 ├── main.py
 ├── library.py
 ├── database.py
