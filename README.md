@@ -1,6 +1,18 @@
 # Library Management
 
-A simple command-line Expense Tracker built with Python and SQLite.
+A simple command-line Library Management  built with Python, Pydantic and SQLite.
+
+## Preview
+![Library Management]("images/demo.png")
+![Library Management Pic]("images/demo1.png")
+
+## Features
+- Add, Remove, Update, Find, Show books
+- Add, Remove, Update, Find, Show members
+- Borrow Book
+- Return Book
+- Member History
+- Book History
 
 ## Technologies
 
@@ -40,10 +52,11 @@ python main.py
 ## Example
 
 ```
-1. Add Member
-2. Add Book
-3. Borrow Book
-4. Return Book
+1. Add Book
+2. Update Book
+3. Add Member
+4. Borrow Book
+5. Return Book
 ...
 ```
 
